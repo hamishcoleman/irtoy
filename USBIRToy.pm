@@ -38,7 +38,7 @@ sub hexDump
 	{
 		( $t, $data ) = unpack "C a*", $data;
 		$r .= sprintf "%#.2x ", $t;
-		$x .= sprintf "%c", ( $t > 20 && $t < 128 ) ? $t : "." if $ctrl;
+		$x .= sprintf "%c", ( $t > 20 && $t < 128 ) ? $t : 0x2e if $ctrl;
 
 	}
 	$r .= "[$x]" if $ctrl;
@@ -238,7 +238,7 @@ sub rsTxRx($$$)
 			printf " [NOK %#.2x]", $rx if $dbg && !$getrawdata;
 		}
 	}
-	printf "\n", $ctrl if $dbg;
+	printf "\n" if $dbg;
 
 	return $rx;
 } ## end sub rsTxRx($$$)
