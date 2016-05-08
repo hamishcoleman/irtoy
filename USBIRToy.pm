@@ -131,7 +131,7 @@ sub rsRx($$)
 	} ## end while ( ( $x, $rx ) = $rs...
 	if ( $dbg && length($rdata) )
 	{
-		printf "%s", hexdump( $rdata, 1 );
+		printf "%s", hexDump( $rdata, 1 );
 		printf " (i=%d)\n", $i;
 	}
 	return $rdata;
@@ -224,7 +224,7 @@ sub rsTxRx($$$)
 	$rx = rsRx( $rs, CTRL );
 	if ($getrawdata)
 	{
-		printf " rawRx:%s", hexdump( $rx, 1 ) if $dbg;
+		printf " rawRx:%s", hexDump( $rx, 1 ) if $dbg;
 	}
 	else
 	{
