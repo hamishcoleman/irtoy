@@ -106,7 +106,8 @@ sub rsRx($$)
 	my $rx;
 	my $rdata = '';
 	$dbg = ( $ctrl & DEBUG );
-	print "\n>>> rsRx():" if $dbg;
+	print "rsRx()\n" if $dbg;
+	print "> " if $dbg;
 
 	while ( ( $x, $rx ) = $rs->read(1) )
 	{
@@ -146,11 +147,9 @@ sub rsTxByte($$$)
 	my $x;
 	my $rx;
 	my $dbg = ( $ctrl & DEBUG );
-	printf " rsTxByte(ctrl:%04b)(0x%02x=0b%08b=%d)\n", $ctrl, $byte, $byte,
-	  $byte
-	  if $dbg;
+	printf "rsTxByte(0x%02x=0b%08b=%d) = ", $byte, $byte, $byte if $dbg;
 	$x = $rs->write( pack( "C", $byte & 0xff ) );
-	printf "rsTxByte(): 0x%02x -> $x\n", $byte if $dbg;
+	printf "$x\n" if $dbg;
 	return $x;
 }
 
@@ -200,42 +199,32 @@ sub rsTxRx($$$)
 	my $dbg        = ( $ctrl & DEBUG );
 	my $getrawdata = ( $ctrl & GETRAWDATA );
 	my $skiprx     = ( $ctrl & SKIP_RX );
-	if ($dbg)
-	{
+        printf "rsTxRx(ctrl:%04b)\n", $ctrl if $dbg;
+        printf "> (0x%02x=0b%08b=%d)\n", $byte, $byte, $byte if $dbg;
 
-		if ($getrawdata)
-		{
-			print "< RAW";
-		}
-		else
-		{
-			print "< ___";
-		}
-	}
-	printf " rsTxRx(ctrl:%04b)(0x%02x=0b%08b=%d)\n", $ctrl, $byte, $byte, $byte
-	  if $dbg;
 	$x = $rs->write( pack( "C", $byte & 0xff ) );
 	if ($skiprx)
 	{
 		print "SKIP_RX\n";
 		return;
 	}
+        printf "< ", if $dbg;
 	select( undef, undef, undef, .01 );
 	$rx = rsRx( $rs, CTRL );
 	if ($getrawdata)
 	{
-		printf " rawRx:%s", hexDump( $rx, 1 ) if $dbg;
+		printf "rawRx:%s", hexDump( $rx, 1 ) if $dbg;
 	}
 	else
 	{
 		$rx = unpack( "C", $rx );
 		if ( $rx == 1 )
 		{
-			printf " [OK %#.2x]", $rx if $dbg && !$getrawdata;
+			printf "[OK %#.2x]", $rx if $dbg
 		}
 		else
 		{
-			printf " [NOK %#.2x]", $rx if $dbg && !$getrawdata;
+			printf "[NOK %#.2x]", $rx if $dbg
 		}
 	}
 	printf "\n" if $dbg;
@@ -266,10 +255,10 @@ sub irtoy_reset($$)
 	my $i;
 	my $res;
 	my $dbg = ( $ctrl & DEBUG );
+        printf "irtoy_reset()\n" if $dbg;
 	for ( $i = 0; $i < 5; $i++ )
 	{
 		$res = rsTxByte( $rs, $ctrl, RESET );
-		printf "$i == $res\n" if $dbg;
 	}
 }
 
@@ -279,6 +268,8 @@ sub irtoy_reset($$)
 sub irtoy_mode_s($$)
 {
 	my ( $rs, $ctrl ) = @_;
+
+        printf "irtoy_mode_s()\n" if ($ctrl & DEBUG);
 
 	#reset USB IR Toy
 	irtoy_reset( $rs, $ctrl );
@@ -301,7 +292,7 @@ sub irtoy_chkEnd($$)
 	my $dbg = ( $ctrl & DEBUG );
 	my $l   = length($data);
 	my $x;
-	printf "toy_chk_end(): len=%d 0x%04x\n", $l, unpack( "n", $data ) if $dbg;
+	printf "irtoy_chkEnd(): len=%d 0x%04x\n", $l, unpack( "n", $data ) if $dbg;
 	while ( length($data) )
 	{
 		( $x, $data ) = unpack( "n a*", $data );
@@ -309,11 +300,11 @@ sub irtoy_chkEnd($$)
 		#printf "irtoy_chk_end(): 0x%04x\n",$x if $dbg;
 		if ( $x == 0xffff )
 		{
-			printf "toy_chk_end(): '1' 0x%04x\n", $x if $dbg;
+			printf "irtoy_chkEnd(): '1' 0x%04x\n", $x if $dbg;
 			return 1;
 		}
 	}
-	printf "toy_chk_end(): '0' 0x%04x\n", $x if $dbg;
+	printf "irtoy_chkEnd(): '0' 0x%04x\n", $x if $dbg;
 	return 0;
 } ## end sub irtoy_chkEnd($$)
 
@@ -330,7 +321,7 @@ sub irtoy_process($$$$)
 	my @arr = ();
 	my $l   = length($data);
 
-	printf "process(): elements:%d/2=%d multiply=%.4f\n", $l, ( $l / 2 ), $mul
+	printf "irtoy_process(): elements:%d/2=%d multiply=%.4f\n", $l, ( $l / 2 ), $mul
 	  if $dbg;
 	open O, ">$file";
 	binmode O;
@@ -349,7 +340,7 @@ sub irtoy_process($$$$)
 		$i++;
 	}
 	close O;
-	printf "process(): min=0x%04x, sum:%d/min=%.4f=round(%d)\n",
+	printf "irtoy_process(): min=0x%04x, sum:%d/min=%.4f=round(%d)\n",
 	  $min, $sum, ( $sum / $min ), round( $sum / $min )
 	  if $dbg;
 	return $min, $sum, \@arr;
