@@ -4,6 +4,7 @@ use strict;
 #
 #
 # Anton Todorov
+# Hamish Coleman
 # CC BY (http://creativecommons.org/licenses/by/3.0/)
 
 use File::Spec;
@@ -11,14 +12,13 @@ use File::Spec;
 # allow the libs to be in the bin dir
 use FindBin;
 use lib File::Spec->catdir($FindBin::RealBin,"lib");
-use lib File::Spec->catdir($ENV{HOME},"s/bin/lib");
 
 use Data::Dumper;
 $Data::Dumper::Indent = 1;
 $Data::Dumper::Sortkeys = 1;
 $Data::Dumper::Quotekeys = 0;
 
-use HC::Common;
+use Getopt::Long 2.33 qw(:config gnu_getopt no_auto_abbrev);
 
 unless ( eval {require USBIRToy} )
 {
@@ -33,8 +33,28 @@ my @option_list = (
     "debug",
 );
 
+sub do_options {
+    my $option = shift || die "no option!";
+    my @option_list = grep {$_} @_;
+    GetOptions($option,@option_list,'man','help|?') or pod2usage(2);
+    if ($option->{help} && @option_list) {
+        print("List of options:\n");
+        print("\t");
+        foreach(sort @option_list) {
+            $_="--".$_;
+        }
+        print join(", ",@option_list);
+        print("\n");
+    }
+    pod2usage(-exitstatus => 0, -verbose => 2) if $option->{man};
+
+    if ($option->{quiet}) {
+        delete $option->{verbose};
+    }
+}
+
 sub main() {
-    HC::Common::do_options($option,@option_list);
+    do_options($option,@option_list);
     return if (defined($option->{help}));
 
     my $prefix = $option->{prefix} || $$ . "test";
