@@ -58,7 +58,8 @@ sub main() {
     $toy->debug($option->{debug});
 
     $toy->reset();
-    
+    $toy->mode_selftest();
+
 }
 main();
 

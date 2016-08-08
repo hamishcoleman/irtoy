@@ -60,6 +60,20 @@ sub write {
     return $self->{serialport}->write($buf);
 }
 
+# read some bytes from the port
+sub read {
+    my $self = shift;
+    my $wanted = shift;
+
+    my ($count,$buf) = $self->{serialport}->read($wanted);
+
+    if ($self->debug()) {
+        print("DEBUG: read() = ",$count,",",unpack('H*',$buf),"\n");
+    }
+
+    return ($count,$buf);
+}
+
 # Send the reset command to the toy
 sub reset {
     my $self = shift;
@@ -74,13 +88,43 @@ sub reset {
     # TODO
     # - is this short write ever encountered?
     # - should we wait for write_done() here?
+
+    # Slirp up any data in the buffer
+    # TODO - this could just make it slower?
+    $self->read(255);
+
     return $count;
 }
 
+# IR sampling mode
 sub mode_s {
     my $self = shift;
-    DIG HERE
-    $self->{serialport}->write('s');
+    $self->write('s');
+    my ($count,$buf) = $self->read(255); # slirp up any response data
+    if ($buf eq 'S01') {
+        return $self;
+    }
+    return undef;
 }
+
+sub mode_selftest {
+    my $self = shift;
+    $self->write('t');
+    my ($count,$buf) = $self->read(255); # slirp up any response data
+    if ($buf eq 'V222') {
+        return $self;
+    }
+    # FA20
+    return undef;
+}
+
+# List of commands:
+# SUMP mode
+# "r" responds with OK
+# "s" enter IR Sampling (done)
+# "t" run selftest (done)
+# "v" show version - responds with "V1xx"
+# "u" enter serial port bridge mode
+# "$" enter bootloader
 
 1;
