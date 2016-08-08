@@ -17,6 +17,15 @@ sub new {
     return $self;
 }
 
+sub debug {
+    my $self = shift;
+    my $debug = shift;
+    if (defined($debug)) {
+        $self->{debug} = $debug;
+    }
+    return $self->{debug};
+}
+
 sub open {
     my $self = shift;
     my $port = shift;
@@ -39,11 +48,23 @@ sub open {
     return $self;
 }
 
+# write some bytes to the port
+sub write {
+    my $self = shift;
+    my $buf = shift;
+
+    if ($self->debug()) {
+        print("DEBUG: write: ",unpack('H*',$buf),"\n");
+    }
+
+    return $self->{serialport}->write($buf);
+}
+
 # Send the reset command to the toy
 sub reset {
     my $self = shift;
     my $reset = chr(0)x5;
-    my $count = $self->{serialport}->write($reset);
+    my $count = $self->write($reset);
     if (!$count) {
         return undef;
     }

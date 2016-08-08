@@ -55,6 +55,7 @@ sub main() {
     die("Please specify port") if (!defined($option->{port}));
 
     my $toy = IRToy->new()->open($option->{port}) || die("couldnt open");
+    $toy->debug($option->{debug});
 
     $toy->reset();
     
