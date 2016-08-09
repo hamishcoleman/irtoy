@@ -85,6 +85,8 @@ sub reset {
     if ($count != length($reset)) {
         warn("Short write");
     }
+    # FIXME - mark the object as in RC decoder mode
+
     # TODO
     # - is this short write ever encountered?
     # - should we wait for write_done() here?
@@ -126,6 +128,7 @@ sub _check {
 # a cached comms check
 sub check {
     my $self = shift;
+    # FIXME - also check that the object is in the right mode
 
     if (defined($self->{check}) && $self->{check}) {
         return $self;
@@ -143,6 +146,7 @@ sub check {
 # IR sampling mode
 sub mode_s {
     my $self = shift;
+    die; # FIXME - mark the object as in sampling mode
     $self->write('s');
     my ($count,$buf) = $self->read(3); # slirp up expected response data
     if ($buf eq 'S01') {
