@@ -70,6 +70,15 @@ sub main() {
         print($toy->get_sumpid(),"\n");
     } elsif ($cmd eq 'version') {
         print($toy->get_version(),"\n");
+    } elsif ($cmd eq 'raw') {
+        $toy->write(pack('H*',$ARGV[1]));
+        my $maxlen = $ARGV[2];
+
+        my $data = '';
+        while (length($data) < $maxlen) {
+            my ($count,$buf) = $toy->read(128);
+            $data .= $buf;
+        }
     } else {
         die("unknown command");
     }
