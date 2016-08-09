@@ -199,6 +199,18 @@ sub get_sumpid {
     #   hardware might return other values for...
 }
 
+# read an IRman packet
+sub read_rc {
+    my $self = shift;
+    return if (!defined($self->check()));
+
+    my ($count, $buf) = $self->read(6);
+    return $buf;
+    # TODO
+    # - find an RC5 remote and actually test this :-(
+    # - return this as an object that can sanely use the data
+}
+
 sub sump_run {
     my $self = shift;
     return if (!defined($self->check()));
