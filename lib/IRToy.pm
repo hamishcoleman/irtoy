@@ -100,7 +100,7 @@ sub reset {
 sub mode_s {
     my $self = shift;
     $self->write('s');
-    my ($count,$buf) = $self->read(255); # slirp up any response data
+    my ($count,$buf) = $self->read(3); # slirp up expected response data
     if ($buf eq 'S01') {
         return $self;
     }
@@ -110,7 +110,7 @@ sub mode_s {
 sub mode_selftest {
     my $self = shift;
     $self->write('t');
-    my ($count,$buf) = $self->read(255); # slirp up any response data
+    my ($count,$buf) = $self->read(4); # slirp up expected response data
     if ($buf eq 'V222') {
         return $self;
     }
