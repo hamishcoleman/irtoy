@@ -96,6 +96,17 @@ sub reset {
     return $count;
 }
 
+#
+sub cmd_r {
+    my $self = shift;
+    $self->write('r');
+    my ($count,$buf) = $self->read(2); # slirp up expected response data
+    if ($buf eq 'OK') {
+        return $self;
+    }
+    return undef;
+}
+
 # IR sampling mode
 sub mode_s {
     my $self = shift;
@@ -118,13 +129,24 @@ sub mode_selftest {
     return undef;
 }
 
+#
+sub cmd_v {
+    my $self = shift;
+    $self->write('v');
+    my ($count,$buf) = $self->read(4); # slirp up expected response data
+    if ($buf eq 'V222') {
+        return $self;
+    }
+    return undef;
+}
+
 # List of commands:
 # SUMP mode
-# "r" responds with OK
+# "r" responds with OK (done)
 # "s" enter IR Sampling (done)
 # "t" run selftest (done)
-# "v" show version - responds with "V1xx"
 # "u" enter serial port bridge mode
+# "v" show version - responds with "V1xx" (done)
 # "$" enter bootloader
 
 1;

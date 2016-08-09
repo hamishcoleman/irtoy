@@ -57,8 +57,12 @@ sub main() {
     my $toy = IRToy->new()->open($option->{port}) || die("couldnt open");
     $toy->debug($option->{debug});
 
+    # TODO - optionally omit reset
     $toy->reset();
-    $toy->mode_selftest();
+
+    # TODO - allow mutiple commands
+    $toy->cmd_v();
+    # TODO - show version results
 
 }
 main();
