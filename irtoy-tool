@@ -68,6 +68,9 @@ sub main() {
         print($toy->selftest(),"\n");
     } elsif ($cmd eq 'sumpid') {
         print($toy->get_sumpid(),"\n");
+    } elsif ($cmd eq 'sumprun') {
+        $toy->sump_run();
+        # TODO - do something with the data..
     } elsif ($cmd eq 'version') {
         print($toy->get_version(),"\n");
     } elsif ($cmd eq 'raw') {

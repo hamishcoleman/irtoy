@@ -199,6 +199,20 @@ sub get_sumpid {
     #   hardware might return other values for...
 }
 
+sub sump_run {
+    my $self = shift;
+    return if (!defined($self->check()));
+    $self->write(chr(0x01));
+
+    my $data = '';
+    while (length($data) < 4096) {
+        my ($count,$buf) = $self->read(255);
+        $data .= $buf;
+    }
+    return $data;
+    # TODO - return this as an object that can sanely use the data
+}
+
 # List of commands:
 # RC decoder mode
 # \x0 reset to RC decoder mode
