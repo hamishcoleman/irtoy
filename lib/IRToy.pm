@@ -151,16 +151,20 @@ sub mode_s {
     return undef;
 }
 
-sub mode_selftest {
+sub selftest {
     my $self = shift;
     return if (!defined($self->check()));
     $self->write('t');
     my ($count,$buf) = $self->read(4); # slirp up expected response data
-    if ($buf eq 'V222') {
-        return $self;
-    }
-    # FA20
-    return undef;
+    return $buf;
+
+    # TODO
+    # - return a true/false pass/fail
+    # - stash the actual return value and have an accessor
+    #
+    # if $buf =~ /^V/ pass
+    # if $buf =~ /^FA/ fail with errcode
+    # else bad error
 }
 
 #

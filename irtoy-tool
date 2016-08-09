@@ -61,7 +61,12 @@ sub main() {
     die("Can not communicate") if (!defined($toy->check()));
 
     my $cmd = $ARGV[0] || '';
-    if ($cmd eq 'version') {
+    if ($cmd eq 'check') {
+        # done already above, so.. do nothing here
+    } elsif ($cmd eq 'selftest') {
+        # TODO - pass or fail result
+        print($toy->selftest(),"\n");
+    } elsif ($cmd eq 'version') {
         print($toy->get_version(),"\n");
     } else {
         die("unknown command");
