@@ -179,8 +179,27 @@ sub get_version {
     return undef;
 }
 
+#
+sub get_sumpid {
+    my $self = shift;
+    return if (!defined($self->check()));
+    $self->write(chr(0x02));
+    my ($count,$buf) = $self->read(4); # slirp up expected response data
+    if ($buf eq '1ALS') {
+        # "SLA1" output LSB first
+        return $buf;
+    }
+    return undef;
+    # TODO
+    # - read the SUMP docs - this looks like a generic command that other
+    #   hardware might return other values for...
+}
+
 # List of commands:
-# SUMP mode
+# RC decoder mode
+# \x0 reset to RC decoder mode
+# \x1 SUMP run
+# \x2 SUMP ID - responds with "1ALS"
 # "r" irman handshake - responds with OK (done)
 # "s" enter IR Sampling (done)
 # "t" run selftest (done)

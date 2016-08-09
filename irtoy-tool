@@ -66,6 +66,8 @@ sub main() {
     } elsif ($cmd eq 'selftest') {
         # TODO - pass or fail result
         print($toy->selftest(),"\n");
+    } elsif ($cmd eq 'sumpid') {
+        print($toy->get_sumpid(),"\n");
     } elsif ($cmd eq 'version') {
         print($toy->get_version(),"\n");
     } else {
