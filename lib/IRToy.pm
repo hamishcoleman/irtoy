@@ -169,8 +169,8 @@ sub get_version {
     return if (!defined($self->check()));
     $self->write('v');
     my ($count,$buf) = $self->read(4); # slirp up expected response data
-    if ($buf eq 'V222') {
-        return $self;
+    if ($buf =~ /^V/) {
+        return $buf;
     }
     return undef;
 }

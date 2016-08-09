@@ -60,9 +60,12 @@ sub main() {
     # Confirm that we have working comms with the device
     die("Can not communicate") if (!defined($toy->check()));
 
-    # TODO - allow mutiple commands
-    $toy->cmd_v();
-    # TODO - show version results
+    my $cmd = $ARGV[0] || '';
+    if ($cmd eq 'version') {
+        print($toy->get_version(),"\n");
+    } else {
+        die("unknown command");
+    }
 
 }
 main();
