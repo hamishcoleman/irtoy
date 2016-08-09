@@ -96,14 +96,47 @@ sub reset {
     return $count;
 }
 
-#
-sub cmd_r {
+# Send an IRman handshake
+sub handshake {
     my $self = shift;
-    $self->write('r');
+    $self->write('ir');
     my ($count,$buf) = $self->read(2); # slirp up expected response data
     if ($buf eq 'OK') {
         return $self;
     }
+    return undef;
+}
+
+# Check that we can talk to the irtoy, and get the right response
+sub _check {
+    my $self = shift;
+
+    # Send a query command, success if we get good data
+    return $self if (defined($self->handshake()));
+
+    # no good data, try a reset
+    return undef if (!defined($self->reset()));
+
+    # reset worked, try the query again
+    return $self if (defined($self->handshake()));
+
+    return undef;
+}
+
+# a cached comms check
+sub check {
+    my $self = shift;
+
+    if (defined($self->{check}) && $self->{check}) {
+        return $self;
+    }
+
+    if ($self->_check()) {
+        $self->{check} = 1;
+        return $self;
+    }
+
+    $self->{check} = 0;
     return undef;
 }
 
@@ -120,6 +153,7 @@ sub mode_s {
 
 sub mode_selftest {
     my $self = shift;
+    return if (!defined($self->check()));
     $self->write('t');
     my ($count,$buf) = $self->read(4); # slirp up expected response data
     if ($buf eq 'V222') {
@@ -130,8 +164,9 @@ sub mode_selftest {
 }
 
 #
-sub cmd_v {
+sub get_version {
     my $self = shift;
+    return if (!defined($self->check()));
     $self->write('v');
     my ($count,$buf) = $self->read(4); # slirp up expected response data
     if ($buf eq 'V222') {
@@ -142,7 +177,7 @@ sub cmd_v {
 
 # List of commands:
 # SUMP mode
-# "r" responds with OK (done)
+# "r" irman handshake - responds with OK (done)
 # "s" enter IR Sampling (done)
 # "t" run selftest (done)
 # "u" enter serial port bridge mode
