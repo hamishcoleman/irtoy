@@ -228,13 +228,20 @@ sub sump_run {
 # List of commands:
 # RC decoder mode
 # \x0 reset to RC decoder mode
-# \x1 SUMP run
-# \x2 SUMP ID - responds with "1ALS"
+# \x1 enter sump mode and - SUMP run
+# \x2 enter sump mode and - SUMP ID - responds with "1ALS"
+# "p" enter ir widget mode
 # "r" irman handshake - responds with OK (done)
 # "s" enter IR Sampling (done)
 # "t" run selftest (done)
 # "u" enter serial port bridge mode
 # "v" show version - responds with "V1xx" (done)
 # "$" enter bootloader
+
+# SUMP mode
+# \x0 reset to RC decoder mode
+# \x1 SUMP run
+# \x2 SUMP ID
+# \x4 SUMP META - returns something like 4008310200
 
 1;
