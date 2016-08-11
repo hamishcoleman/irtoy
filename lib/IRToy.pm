@@ -7,6 +7,18 @@ use strict;
 
 use Device::SerialPort;
 
+use base 'Exporter';
+
+use constant MODE_UNK    => 0;
+use constant MODE_RC     => 1;
+use constant MODE_SUMP   => 2;
+use constant MODE_SAMPLE => 3;
+
+our @EXPORT_OK = qw(MODE_UNK MODE_RC MODE_SUMP MODE_SAMPLE);
+our %EXPORT_TAGS = (
+    consts => ['MODE_UNK', 'MODE_RC', 'MODE_SUMP', 'MODE_SAMPLE']
+);
+
 # bleargh, boilerplate
 #
 sub new {
@@ -14,6 +26,8 @@ sub new {
     my $self = {};
     bless $self, $class;
     #$self->_handle_args(@_);
+
+    $self->{mode} = MODE_UNK;
     return $self;
 }
 
@@ -85,11 +99,14 @@ sub reset {
     if ($count != length($reset)) {
         warn("Short write");
     }
-    # FIXME - mark the object as in RC decoder mode
 
     # TODO
     # - is this short write ever encountered?
     # - should we wait for write_done() here?
+
+    # unfortunately, the reset command has no response, so we just have to
+    # assume it worked
+    $self->{mode} = MODE_RC;
 
     # Slirp up any data in the buffer
     # TODO - this could just make it slower?
@@ -99,57 +116,88 @@ sub reset {
 }
 
 # Send an IRman handshake
-sub handshake {
+sub rc_id {
     my $self = shift;
+    # TODO - should check current mode, but as this is an _id function, I
+    # dont want to cause an infinite loop via the checkmode..
     $self->write('ir');
-    my ($count,$buf) = $self->read(2); # slirp up expected response data
+    my ($count,$buf) = $self->read(2);
     if ($buf eq 'OK') {
+        # since we got the right response, we know what mode we are in
+        $self->{mode} = MODE_RC;
         return $self;
     }
     return undef;
 }
 
-# Check that we can talk to the irtoy, and get the right response
-sub _check {
+sub sump_id {
+    my $self = shift;
+    # TODO - same comment as in rc_id
+    $self->write(chr(0x02));
+    my ($count,$buf) = $self->read(4);
+    if ($buf eq '1ALS') {
+        # "SLA1" output LSB first
+        return $self;
+    }
+    return undef;
+}
+
+# Check that we can talk to the irtoy, and are in the right mode
+sub _mode_rc {
     my $self = shift;
 
     # Send a query command, success if we get good data
-    return $self if (defined($self->handshake()));
+    return $self if (defined($self->rc_id()));
 
     # no good data, try a reset
     return undef if (!defined($self->reset()));
 
     # reset worked, try the query again
-    return $self if (defined($self->handshake()));
+    return $self if (defined($self->rc_id()));
 
     return undef;
 }
 
-# a cached comms check
-sub check {
+sub _mode_sump {
     my $self = shift;
-    # FIXME - also check that the object is in the right mode
 
-    if (defined($self->{check}) && $self->{check}) {
+    # to get to sump mode, we go to rc mode first..
+    return undef if (!defined($self->checkmode(MODE_RC)));
+
+    return $self->sump_id();
+}
+
+# comms and correct mode check
+sub checkmode {
+    my $self = shift;
+    my $wantmode = shift;
+
+    return undef if (!defined($wantmode));
+
+    if ($self->{mode} == $wantmode) {
         return $self;
     }
 
-    if ($self->_check()) {
-        $self->{check} = 1;
-        return $self;
+    if ($wantmode == MODE_RC) {
+        return $self->_mode_rc();
     }
+    if ($wantmode == MODE_SUMP) {
+        return $self->_mode_sump();
+    }
+    # TODO - add other modes here
 
-    $self->{check} = 0;
+    # no mode matched or worked
     return undef;
 }
 
 # IR sampling mode
 sub mode_s {
     my $self = shift;
-    die; # FIXME - mark the object as in sampling mode
+    return if (!defined($self->checkmode(MODE_RC)));
     $self->write('s');
     my ($count,$buf) = $self->read(3); # slirp up expected response data
     if ($buf eq 'S01') {
+        $self->{mode} = MODE_SAMPLE;
         return $self;
     }
     return undef;
@@ -157,7 +205,7 @@ sub mode_s {
 
 sub selftest {
     my $self = shift;
-    return if (!defined($self->check()));
+    return if (!defined($self->checkmode(MODE_RC)));
     $self->write('t');
     my ($count,$buf) = $self->read(4); # slirp up expected response data
     return $buf;
@@ -174,7 +222,7 @@ sub selftest {
 #
 sub get_version {
     my $self = shift;
-    return if (!defined($self->check()));
+    return if (!defined($self->checkmode(MODE_RC)));
     $self->write('v');
     my ($count,$buf) = $self->read(4); # slirp up expected response data
     if ($buf =~ /^V/) {
@@ -184,25 +232,19 @@ sub get_version {
 }
 
 #
-sub get_sumpid {
+sub sump_meta {
     my $self = shift;
-    return if (!defined($self->check()));
-    $self->write(chr(0x02));
-    my ($count,$buf) = $self->read(4); # slirp up expected response data
-    if ($buf eq '1ALS') {
-        # "SLA1" output LSB first
-        return $buf;
-    }
-    return undef;
-    # TODO
-    # - read the SUMP docs - this looks like a generic command that other
-    #   hardware might return other values for...
+    return if (!defined($self->checkmode(MODE_SUMP)));
+    $self->write(chr(0x04));
+    my ($count,$buf) = $self->read(5); # FIXME - should be variable sized
+    return $buf;
+    # TODO - this is a [tag,value]+,\x0 result buffer.. unpack it
 }
 
 # read an IRman packet
 sub read_rc {
     my $self = shift;
-    return if (!defined($self->check()));
+    return if (!defined($self->checkmode(MODE_RC)));
 
     my ($count, $buf) = $self->read(6);
     return $buf;
@@ -213,12 +255,15 @@ sub read_rc {
 
 sub sump_run {
     my $self = shift;
-    return if (!defined($self->check()));
+    return if (!defined($self->checkmode(MODE_SUMP)));
     $self->write(chr(0x01));
+
+    # Note that there could be an indefinite delay until the first data arrives
+    # as the irtoy waits for an IR signal.
 
     my $data = '';
     while (length($data) < 4096) {
-        my ($count,$buf) = $self->read(255);
+        my ($count,$buf) = $self->read(128); # read size is a multiple of 4096
         $data .= $buf;
     }
     return $data;

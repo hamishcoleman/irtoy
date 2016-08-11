@@ -19,7 +19,7 @@ $Data::Dumper::Quotekeys = 0;
 
 use Getopt::Long 2.33 qw(:config gnu_getopt no_auto_abbrev);
 
-use IRToy;
+use IRToy ':consts';
 
 my $option = {
 };
@@ -58,7 +58,7 @@ sub main() {
     $toy->debug($option->{debug});
 
     # Confirm that we have working comms with the device
-    die("Can not communicate") if (!defined($toy->check()));
+    die("Can not communicate") if (!defined($toy->checkmode(IRToy::MODE_RC)));
 
     my $cmd = $ARGV[0] || '';
     if ($cmd eq 'check') {
@@ -70,8 +70,8 @@ sub main() {
     } elsif ($cmd eq 'selftest') {
         # TODO - pass or fail result
         print($toy->selftest(),"\n");
-    } elsif ($cmd eq 'sumpid') {
-        print($toy->get_sumpid(),"\n");
+    } elsif ($cmd eq 'sumpmeta') {
+        print($toy->sump_meta(),"\n");
     } elsif ($cmd eq 'sumprun') {
         $toy->sump_run();
         # TODO - do something with the data..
