@@ -234,7 +234,7 @@ sub get_version {
 }
 
 # read an IRman packet
-sub read_rc {
+sub rc_read {
     my $self = shift;
     return if (!defined($self->checkmode(MODE_RC)));
 

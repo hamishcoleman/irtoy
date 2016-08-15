@@ -63,9 +63,9 @@ sub main() {
     my $cmd = $ARGV[0] || '';
     if ($cmd eq 'check') {
         # done already above, so.. do nothing here
-    #} elsif ($cmd eq 'read_rc') {
+    #} elsif ($cmd eq 'rc_read') {
     #    while(1) {
-    #        $toy->read_rc();
+    #        $toy->rc_read();
     #    }
     } elsif ($cmd eq 'selftest') {
         # TODO - pass or fail result
