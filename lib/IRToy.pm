@@ -167,6 +167,21 @@ sub _mode_sump {
     return $self->sump_id();
 }
 
+sub _mode_sampling {
+    my $self = shift;
+
+    # to get to sampling mode, we go to rc mode first..
+    return undef if (!defined($self->checkmode(MODE_RC)));
+
+    $self->write('s');
+    my ($count,$buf) = $self->read(3); # slirp up expected response data
+    if ($buf eq 'S01') {
+        $self->{mode} = MODE_SAMPLE;
+        return $self;
+    }
+    return undef;
+}
+
 # comms and correct mode check
 sub checkmode {
     my $self = shift;
@@ -184,22 +199,11 @@ sub checkmode {
     if ($wantmode == MODE_SUMP) {
         return $self->_mode_sump();
     }
-    # TODO - add other modes here
+    if ($wantmode == MODE_SAMPLE) {
+        return $self->_mode_sampling();
+    }
 
     # no mode matched or worked
-    return undef;
-}
-
-# IR sampling mode
-sub mode_s {
-    my $self = shift;
-    return if (!defined($self->checkmode(MODE_RC)));
-    $self->write('s');
-    my ($count,$buf) = $self->read(3); # slirp up expected response data
-    if ($buf eq 'S01') {
-        $self->{mode} = MODE_SAMPLE;
-        return $self;
-    }
     return undef;
 }
 
@@ -276,7 +280,15 @@ sub sump_run {
 
 # Functions and Commands for Sample mode
 
-# TODO
+# Get settings descriptor (0x23) (Firmware v20+)
+sub sample_settings {
+    my $self = shift;
+    return if (!defined($self->checkmode(MODE_SAMPLE)));
+    $self->write(chr(0x23));
+    my ($count,$buf) = $self->read(8);
+    return $buf;
+    # TODO - return this as an object that can sanely use the data
+}
 
 # List of commands:
 # RC decoder mode

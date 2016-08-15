@@ -70,7 +70,11 @@ sub main() {
     } elsif ($cmd eq 'selftest') {
         # TODO - pass or fail result
         print($toy->selftest(),"\n");
+    } elsif ($cmd eq 'sample_settings') {
+        # TODO - this simply prints binary data!
+        print($toy->sample_settings(),"\n");
     } elsif ($cmd eq 'sumpmeta') {
+        # TODO - this simply prints binary data!
         print($toy->sump_meta(),"\n");
     } elsif ($cmd eq 'sumprun') {
         $toy->sump_run();
