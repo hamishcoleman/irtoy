@@ -203,6 +203,8 @@ sub mode_s {
     return undef;
 }
 
+# Functions and Commands for RC mode
+
 sub selftest {
     my $self = shift;
     return if (!defined($self->checkmode(MODE_RC)));
@@ -231,16 +233,6 @@ sub get_version {
     return undef;
 }
 
-#
-sub sump_meta {
-    my $self = shift;
-    return if (!defined($self->checkmode(MODE_SUMP)));
-    $self->write(chr(0x04));
-    my ($count,$buf) = $self->read(5); # FIXME - should be variable sized
-    return $buf;
-    # TODO - this is a [tag,value]+,\x0 result buffer.. unpack it
-}
-
 # read an IRman packet
 sub read_rc {
     my $self = shift;
@@ -251,6 +243,18 @@ sub read_rc {
     # TODO
     # - find an RC5 remote and actually test this :-(
     # - return this as an object that can sanely use the data
+}
+
+# Functions and Commands for SUMP mode
+
+#
+sub sump_meta {
+    my $self = shift;
+    return if (!defined($self->checkmode(MODE_SUMP)));
+    $self->write(chr(0x04));
+    my ($count,$buf) = $self->read(5); # FIXME - should be variable sized
+    return $buf;
+    # TODO - this is a [tag,value]+,\x0 result buffer.. unpack it
 }
 
 sub sump_run {
@@ -269,6 +273,10 @@ sub sump_run {
     return $data;
     # TODO - return this as an object that can sanely use the data
 }
+
+# Functions and Commands for Sample mode
+
+# TODO
 
 # List of commands:
 # RC decoder mode
