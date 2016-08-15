@@ -273,8 +273,8 @@ sub sump_run {
 # List of commands:
 # RC decoder mode
 # \x0 reset to RC decoder mode
-# \x1 enter sump mode and - SUMP run
-# \x2 enter sump mode and - SUMP ID - responds with "1ALS"
+# \x1 enter sump mode and - SUMP run (done)
+# \x2 enter sump mode and - SUMP ID - responds with "1ALS" (done)
 # "p" enter ir widget mode
 # "r" irman handshake - responds with OK (done)
 # "s" enter IR Sampling (done)
@@ -285,8 +285,31 @@ sub sump_run {
 
 # SUMP mode
 # \x0 reset to RC decoder mode
-# \x1 SUMP run
-# \x2 SUMP ID
-# \x4 SUMP META - returns something like 4008310200
+# \x1 SUMP run (done)
+# \x2 SUMP ID (done)
+# \x4 SUMP META - returns something like 4008310200 (done)
+
+# Sampling mode
+# \x0 reset to RC decoder mode
+# \x1 enter sump mode and - SUMP run (done)
+# \x2 enter sump mode and - SUMP ID - responds with "1ALS" (done)
+# 0x03 Transmit (FW v07+)
+# 0x04 Frequency report (reserved for future hardware)
+# 0x05 Setup sample timer (FW v07+)
+# 0x06 Setup frequency modulation timer (FW v07+)
+# 0x10 LED mute on (FW v07+)
+# 0x11 LED mute off (FW v07+)
+# 0x12 LED on (FW v07+)
+# 0x13 LED off (FW v07+)
+# 0x23 Settings descriptor report (FW v20+)
+# 0x24 Enable transmit byte count report (FW v20+)
+# 0x25 Enable transmit notify on complete (FW v20+)
+# 0x26 Enable transmit handshake (FW v20+)
+# 0x30 IO write
+# 0x31 IO direction
+# 0x32 IO read
+# 0x40 UART setup
+# 0x41 UART close
+# 0x42 UART write
 
 1;
