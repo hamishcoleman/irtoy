@@ -290,6 +290,34 @@ sub sample_settings {
     # TODO - return this as an object that can sanely use the data
 }
 
+sub led {
+    my $self = shift;
+    return undef if (!defined($self->checkmode(MODE_SAMPLE)));
+    my $ledstate = shift;
+    return undef if (!defined($ledstate));
+    if ($ledstate) {
+        $self->write(chr(0x12));
+    } else {
+        $self->write(chr(0x13));
+    }
+    return $self;
+}
+
+sub led_mute {
+    my $self = shift;
+    return undef if (!defined($self->checkmode(MODE_SAMPLE)));
+    my $mutestate = shift;
+    return undef if (!defined($mutestate));
+    if ($mutestate) {
+        $self->write(chr(0x10));
+    } else {
+        $self->write(chr(0x11));
+    }
+    return $self;
+}
+
+#sub led_mute
+
 # List of commands:
 # RC decoder mode
 # \x0 reset to RC decoder mode
@@ -317,11 +345,11 @@ sub sample_settings {
 # 0x04 Frequency report (reserved for future hardware)
 # 0x05 Setup sample timer (FW v07+)
 # 0x06 Setup frequency modulation timer (FW v07+)
-# 0x10 LED mute on (FW v07+)
-# 0x11 LED mute off (FW v07+)
-# 0x12 LED on (FW v07+)
-# 0x13 LED off (FW v07+)
-# 0x23 Settings descriptor report (FW v20+)
+# 0x10 LED mute on (FW v07+) (done)
+# 0x11 LED mute off (FW v07+) (done)
+# 0x12 LED on (FW v07+) (done)
+# 0x13 LED off (FW v07+) (done)
+# 0x23 Settings descriptor report (FW v20+) (done)
 # 0x24 Enable transmit byte count report (FW v20+)
 # 0x25 Enable transmit notify on complete (FW v20+)
 # 0x26 Enable transmit handshake (FW v20+)

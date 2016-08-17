@@ -67,6 +67,10 @@ sub main() {
     #    while(1) {
     #        $toy->rc_read();
     #    }
+    } elsif ($cmd eq 'led') {
+        $toy->led($ARGV[1]);
+    } elsif ($cmd eq 'led_mute') {
+        $toy->led($ARGV[1]);
     } elsif ($cmd eq 'selftest') {
         # TODO - pass or fail result
         print($toy->selftest(),"\n");
