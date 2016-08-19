@@ -62,6 +62,13 @@ sub open {
     return $self;
 }
 
+sub DESTROY {
+    my $self = shift;
+    $self->reset() || warn "reset before close failed";
+    $self->{serialport}->close || warn "serial port close failed";
+    return 1;
+}
+
 # write some bytes to the port
 sub write {
     my $self = shift;
@@ -109,8 +116,8 @@ sub reset {
     $self->{mode} = MODE_RC;
 
     # Slirp up any data in the buffer
-    # TODO - this could just make it slower?
-    $self->read(255);
+    #$self->read(255);
+    # TODO - read any waiting data, but dont pause waiting for more
 
     return $count;
 }
