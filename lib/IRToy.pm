@@ -277,10 +277,21 @@ sub sump_run {
     # as the irtoy waits for an IR signal.
 
     my $data = '';
-    while (length($data) < 4096) {
-        my ($count,$buf) = $self->read(128); # read size is a multiple of 4096
+    my $count = 0;
+
+    # wait for the first byte
+    while ($count == 0) {
+        ($count,$data) = $self->read(128);
+    }
+
+    # read data until first timeout
+    # TODO - this means we always will wait for at least one timeout :-(
+    while ($count != 0) {
+        my $buf;
+        ($count,$buf) = $self->read(128);
         $data .= $buf;
     }
+
     return $data;
     # TODO - return this as an object that can sanely use the data
 }
