@@ -50,50 +50,69 @@ sub do_options {
 }
 
 # Quick and dirty conversion from byte to a line-drawing binary
-sub byte2binstr {
-    my $byte = shift;
-    my $prev = shift;
-
-    my $digit_0 = chr(0x2502).' ';
-    my $digit_1 = ' '.chr(0x2503);
-    my $digit_01 = chr(0x2515).chr(0x2513);
-    my $digit_10 = chr(0x250D).chr(0x251B);
-    my $spacer = '  ';
-
-    my $s=$spacer;
-    for (1..8) {
-        if      ( ($prev & 0x1) &&  ($byte & 0x1)) {
-            # both prev and this are 1's
-            $s.=$digit_1;
-        } elsif (!($prev & 0x1) && !($byte & 0x1)) {
-            # both prev and this are 0's
-            $s.=$digit_0;
-        } elsif (!($prev & 0x1) &&  ($byte & 0x1)) {
-            # transition from 0 to 1
-            $s.=$digit_01;
-        } elsif ( ($prev & 0x1) && !($byte & 0x1)) {
-            # transition from 1 to 0
-            $s.=$digit_10;
-        } else {
-            # cannot happen!
-            die;
-        }
-        $s.=$spacer;
-        $byte = $byte >>1;
-        $prev = $prev >>1;
-    }
-    return $s;
-}
-
 sub print_tracebuf {
     my $buf = shift;
 
+    my $digit_0 = chr(0x2502).' ';              # thin line
+    my $digit_1 = ' '.chr(0x2503);              # thick line
+    my $digit_01 = chr(0x2515).chr(0x2513);     # elbows going to thick
+    my $digit_10 = chr(0x250D).chr(0x251B);     # elbows going to thin
+    my $spacer = '  ';
+    my $all_zeros = ($spacer.$digit_0)x8;
+
     binmode(STDOUT, ":utf8");
-    print("  0   1   2   3   4   5   6   7\n");
-    my $prevbyte;
+    print("       0   1   2   3   4   5   6   7\n");
+    my $prev;
+    my $byte_save;
+    my $gap_len = 0;
+    my $signal_len = 0;
+    my $offset = 0;
     for my $byte (split(//,$buf)) {
-        print(byte2binstr(ord($byte),ord($prevbyte)),"\n");
-        $prevbyte=$byte;
+        $byte=ord($byte);
+        $byte_save = $byte;
+
+        if ($byte || $prev) {
+            if ($gap_len) {
+                print($gap_len," zeros\n");
+                print("     ",$all_zeros,"\n");
+                $gap_len = 0;
+            }
+            $signal_len++;
+
+            my $s=sprintf('%04x:',$offset);
+            for (1..8) {
+                $s.=$spacer;
+                if      ( ($prev & 0x1) &&  ($byte & 0x1)) {
+                    # both prev and this are 1's
+                    $s.=$digit_1;
+                } elsif (!($prev & 0x1) && !($byte & 0x1)) {
+                    # both prev and this are 0's
+                    $s.=$digit_0;
+                } elsif (!($prev & 0x1) &&  ($byte & 0x1)) {
+                    # transition from 0 to 1
+                    $s.=$digit_01;
+                } elsif ( ($prev & 0x1) && !($byte & 0x1)) {
+                    # transition from 1 to 0
+                    $s.=$digit_10;
+                } else {
+                    # cannot happen!
+                    die;
+                }
+                $byte = $byte >>1;
+                $prev = $prev >>1;
+            }
+            print($s,"\n");
+        } else {
+            if ($signal_len) {
+                print("     ",$all_zeros,"\n");
+                print($signal_len," signal .. ");
+                $signal_len = 0;
+            }
+            $gap_len++;
+        }
+
+        $prev=$byte_save;
+        $offset++;
     }
 }
 
