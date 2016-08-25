@@ -293,6 +293,13 @@ sub sump_run {
     }
 
     return $data;
+
+    # Data buffer starts with four zero bytes and ends with 0x99
+    # Buffer size appears hardcoded to SUMP_SAMPLE_SIZExx (0x1000)
+    # Each byte is simply the current value of the PIC PORTB GPIO.
+    # Bit 1 is the "IRDETECT" IR detector input
+    # Bit 2 and 4 are both wired to the "IRRX" IR Receiver
+
     # TODO - return this as an object that can sanely use the data
 }
 
