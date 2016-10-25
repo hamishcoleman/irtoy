@@ -17,7 +17,7 @@ $Data::Dumper::Indent = 1;
 $Data::Dumper::Sortkeys = 1;
 $Data::Dumper::Quotekeys = 0;
 
-use Getopt::Long 2.33 qw(:config gnu_getopt no_auto_abbrev);
+use HC::Common;
 
 use IRToy ':consts';
 
@@ -28,26 +28,6 @@ my @option_list = (
     "debug",
     "print=s",
 );
-
-sub do_options {
-    my $option = shift || die "no option!";
-    my @option_list = grep {$_} @_;
-    GetOptions($option,@option_list,'man','help|?') or pod2usage(2);
-    if ($option->{help} && @option_list) {
-        print("List of options:\n");
-        print("\t");
-        foreach(sort @option_list) {
-            $_="--".$_;
-        }
-        print join(", ",@option_list);
-        print("\n");
-    }
-    pod2usage(-exitstatus => 0, -verbose => 2) if $option->{man};
-
-    if ($option->{quiet}) {
-        delete $option->{verbose};
-    }
-}
 
 # Quick and dirty conversion from byte to a line-drawing binary
 sub print_tracebuf {
@@ -124,7 +104,7 @@ sub print_buf {
 }
 
 sub main() {
-    do_options($option,@option_list);
+    HC::Common::do_options($option,@option_list);
     return if (defined($option->{help}));
 
     die("Please specify port") if (!defined($option->{port}));
